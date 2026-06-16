@@ -9,7 +9,16 @@ const CATEGORIES = [
   { id: 'mobile', label: 'Mobile', color: '#5bc0de' },
   { id: 'tools', label: 'Tools', color: '#f1c40f' },
   { id: 'data', label: 'Data', color: '#ec3750' },
-  { id: 'creative', label: 'Creative', color: '#ff8c37' }
+  { id: 'creative', label: 'Creative', color: '#ff8c37' },
+  { id: 'music', label: 'Music', color: '#a633d6' },
+  { id: 'social', label: 'Social', color: '#338eda' },
+  { id: 'education', label: 'Education', color: '#33d6a6' },
+  { id: 'science', label: 'Science', color: '#5bc0de' },
+  { id: 'climate', label: 'Climate', color: '#33d6a6' },
+  { id: 'robotics', label: 'Robotics', color: '#ff8c37' },
+  { id: 'security', label: 'Security', color: '#ec3750' },
+  { id: 'accessibility', label: 'Accessibility', color: '#f1c40f' },
+  { id: '3d', label: '3D / VR', color: '#a633d6' }
 ];
 
 const DIFFICULTY_LABEL = {
@@ -21,16 +30,19 @@ const DIFFICULTY_LABEL = {
 const state = {
   category: 'all',
   loading: false,
-  ideas: []
+  ideas: [],
+  view: 'main'
 };
 
 const COOLDOWN_MS = 4000;
+const HISTORY_KEY = 'hcpi-history';
+const HISTORY_MAX = 12;
 
 const el = (sel) => document.querySelector(sel);
 const results = el('#results');
 const generateBtn = el('#generateBtn');
 
-function buildChips() {
+function buildCategoryChips() {
   const catRow = el('#categoryRow');
   CATEGORIES.forEach((cat) => {
     const btn = document.createElement('button');
@@ -176,7 +188,7 @@ function buildCard(idea) {
   title.textContent = idea.title || 'Untitled idea';
 
   const desc = document.createElement('p');
-  desc.textContent = idea.description || '';
+  desc.textContent = idea.summary || idea.description || '';
 
   const stack = document.createElement('div');
   stack.className = 'stack';
@@ -228,52 +240,130 @@ function openModal(idea) {
   const h2 = document.createElement('h2');
   h2.textContent = idea.title || 'Untitled idea';
 
-  const desc = document.createElement('p');
-  desc.className = 'modal-desc';
-  desc.textContent = idea.description || '';
-
   card.appendChild(close);
   card.appendChild(eyebrow);
   card.appendChild(h2);
-  card.appendChild(desc);
 
-  if (idea.stack && idea.stack.length) {
-    const sec = document.createElement('div');
-    sec.className = 'modal-section';
-    const h4 = document.createElement('h4');
-    h4.textContent = 'Suggested tools & tech';
-    sec.appendChild(h4);
-    const st = document.createElement('div');
-    st.className = 'stack';
-    idea.stack.forEach((t) => {
-      const s = document.createElement('span');
-      s.textContent = t;
-      st.appendChild(s);
-    });
-    sec.appendChild(st);
-    card.appendChild(sec);
+  if (idea.pitch) {
+    const pitch = document.createElement('p');
+    pitch.className = 'modal-pitch';
+    pitch.textContent = idea.pitch;
+    card.appendChild(pitch);
   }
 
-  if (idea.steps && idea.steps.length) {
-    const sec = document.createElement('div');
-    sec.className = 'modal-section';
-    const h4 = document.createElement('h4');
-    h4.textContent = 'How to build it';
-    sec.appendChild(h4);
-    const ol = document.createElement('ol');
-    ol.className = 'steps';
-    idea.steps.forEach((step) => {
-      const li = document.createElement('li');
-      li.textContent = step;
-      ol.appendChild(li);
-    });
-    sec.appendChild(ol);
-    card.appendChild(sec);
+  const meta = document.createElement('div');
+  meta.className = 'modal-meta';
+  if (idea.timeEstimate) {
+    meta.appendChild(metaItem('⏱', idea.timeEstimate));
+  }
+  if (idea.difficulty) {
+    meta.appendChild(metaItem('🎯', DIFFICULTY_LABEL[diff] || idea.difficulty));
+  }
+  if (idea.stack && idea.stack.length) {
+    meta.appendChild(metaItem('🛠', idea.stack.slice(0, 4).join(', ')));
+  }
+  if (meta.childNodes.length) card.appendChild(meta);
+
+  if (idea.stack && idea.stack.length) {
+    card.appendChild(buildSection('Suggested tools & tech', buildChips(idea.stack)));
+  }
+
+  if (idea.whatYouLearn && idea.whatYouLearn.length) {
+    card.appendChild(buildSection('What you\'ll learn', buildChecklist(idea.whatYouLearn, 'learn')));
+  }
+
+  if (idea.prerequisites && idea.prerequisites.length) {
+    const items = idea.prerequisites.filter((p) => p && p.toLowerCase() !== 'none');
+    if (items.length) {
+      card.appendChild(buildSection('Before you start', buildBulletList(items, 'prereq')));
+    }
+  }
+
+  if (idea.howItWorks) {
+    card.appendChild(buildSection('How it works', buildParagraph(idea.howItWorks, 'how')));
+  }
+
+  if (idea.gotchas && idea.gotchas.length) {
+    card.appendChild(buildSection('Watch out for', buildWarnList(idea.gotchas)));
   }
 
   modal.hidden = false;
   document.body.style.overflow = 'hidden';
   close.focus();
+}
+
+function metaItem(icon, text) {
+  const item = document.createElement('div');
+  item.className = 'meta-item';
+  const ic = document.createElement('span');
+  ic.className = 'meta-icon';
+  ic.textContent = icon;
+  const tx = document.createElement('span');
+  tx.textContent = text;
+  item.appendChild(ic);
+  item.appendChild(tx);
+  return item;
+}
+
+function buildSection(title, contentEl) {
+  const sec = document.createElement('div');
+  sec.className = 'modal-section';
+  const h4 = document.createElement('h4');
+  h4.textContent = title;
+  sec.appendChild(h4);
+  sec.appendChild(contentEl);
+  return sec;
+}
+
+function buildChips(items) {
+  const st = document.createElement('div');
+  st.className = 'stack';
+  items.forEach((t) => {
+    const s = document.createElement('span');
+    s.textContent = t;
+    st.appendChild(s);
+  });
+  return st;
+}
+
+function buildChecklist(items, variant) {
+  const ul = document.createElement('ul');
+  ul.className = 'rich-list checklist ' + variant;
+  items.forEach((it) => {
+    const li = document.createElement('li');
+    li.textContent = it;
+    ul.appendChild(li);
+  });
+  return ul;
+}
+
+function buildBulletList(items, variant) {
+  const ul = document.createElement('ul');
+  ul.className = 'rich-list bullets ' + variant;
+  items.forEach((it) => {
+    const li = document.createElement('li');
+    li.textContent = it;
+    ul.appendChild(li);
+  });
+  return ul;
+}
+
+function buildWarnList(items) {
+  const ul = document.createElement('ul');
+  ul.className = 'rich-list warn';
+  items.forEach((it) => {
+    const li = document.createElement('li');
+    li.textContent = it;
+    ul.appendChild(li);
+  });
+  return ul;
+}
+
+function buildParagraph(text, variant) {
+  const p = document.createElement('p');
+  p.className = 'rich-p ' + variant;
+  p.textContent = text;
+  return p;
 }
 
 function closeModal() {
@@ -312,6 +402,7 @@ async function generate() {
     const data = await res.json();
     const ideas = Array.isArray(data) ? data : data.ideas;
     state.ideas = Array.isArray(ideas) ? ideas : [];
+    saveToHistory(state.ideas, req);
     renderIdeas(state.ideas);
   } catch (err) {
     renderError(err && err.message ? err.message : 'Network error.');
@@ -321,8 +412,152 @@ async function generate() {
   }
 }
 
+function saveToHistory(ideas, req) {
+  if (!ideas || !ideas.length) return;
+  const catLabel = (CATEGORIES.find((c) => c.id === req.category) || {}).label || 'All';
+  const batch = {
+    id: Date.now(),
+    time: new Date().toISOString(),
+    topic: req.topic || '',
+    category: catLabel,
+    difficulty: req.difficulty === 'any' ? '' : req.difficulty,
+    ideas: ideas.map((i) => ({
+      title: i.title,
+      difficulty: i.difficulty,
+      timeEstimate: i.timeEstimate,
+      stack: i.stack,
+      summary: i.summary,
+      pitch: i.pitch,
+      whatYouLearn: i.whatYouLearn,
+      prerequisites: i.prerequisites,
+      howItWorks: i.howItWorks,
+      gotchas: i.gotchas
+    }))
+  };
+  const history = loadHistory();
+  history.unshift(batch);
+  if (history.length > HISTORY_MAX) history.length = HISTORY_MAX;
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  } catch (e) {}
+}
+
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function renderHistory() {
+  state.view = 'history';
+  const history = loadHistory();
+  results.innerHTML = '';
+
+  const head = document.createElement('div');
+  head.className = 'results-head';
+  const h2 = document.createElement('h2');
+  h2.textContent = 'Your idea history';
+  head.appendChild(h2);
+  const back = document.createElement('button');
+  back.type = 'button';
+  back.className = 'regen';
+  back.textContent = '← Back to generate';
+  back.addEventListener('click', () => {
+    state.view = 'main';
+    renderIdeas(state.ideas);
+  });
+  head.appendChild(back);
+  results.appendChild(head);
+
+  if (history.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.innerHTML =
+      '<div class="emoji">📭</div>' +
+      '<h2>No history yet.</h2>' +
+      '<p>Generate some ideas and they\'ll show up here so you can revisit them later.</p>';
+    results.appendChild(empty);
+    return;
+  }
+
+  const clearWrap = document.createElement('div');
+  clearWrap.className = 'clear-wrap';
+  const count = document.createElement('span');
+  count.className = 'history-count';
+  count.textContent = history.length + ' batch' + (history.length === 1 ? '' : 'es') + ' saved';
+  clearWrap.appendChild(count);
+  const clear = document.createElement('button');
+  clear.type = 'button';
+  clear.className = 'clear-btn';
+  clear.textContent = 'Clear all';
+  clear.addEventListener('click', () => {
+    try { localStorage.removeItem(HISTORY_KEY); } catch (e) {}
+    renderHistory();
+  });
+  clearWrap.appendChild(clear);
+  results.appendChild(clearWrap);
+
+  history.forEach((batch) => {
+    const group = document.createElement('div');
+    group.className = 'history-group';
+
+    const gh = document.createElement('div');
+    gh.className = 'history-group-head';
+    const meta = document.createElement('span');
+    meta.className = 'history-meta';
+    const parts = [];
+    parts.push(formatTime(batch.time));
+    if (batch.topic) parts.push('“' + batch.topic + '”');
+    if (batch.category && batch.category !== 'All') parts.push(batch.category);
+    if (batch.difficulty) parts.push(batch.difficulty);
+    meta.textContent = parts.join(' · ');
+    gh.appendChild(meta);
+    const count2 = document.createElement('span');
+    count2.className = 'history-batch-count';
+    count2.textContent = batch.ideas.length + ' ideas';
+    gh.appendChild(count2);
+    group.appendChild(gh);
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    batch.ideas.forEach((idea) => grid.appendChild(buildCard(idea)));
+    group.appendChild(grid);
+    results.appendChild(group);
+  });
+}
+
+function formatTime(iso) {
+  try {
+    const d = new Date(iso);
+    const now = new Date();
+    const diff = now - d;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return mins + 'm ago';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ago';
+    const days = Math.floor(hrs / 24);
+    if (days < 7) return days + 'd ago';
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  } catch (e) {
+    return '';
+  }
+}
+
 generateBtn.addEventListener('click', generate);
 el('#advToggle').addEventListener('click', toggleAdvanced);
+el('#historyBtn').addEventListener('click', () => {
+  if (state.view === 'history') {
+    state.view = 'main';
+    renderIdeas(state.ideas);
+  } else {
+    renderHistory();
+  }
+});
 el('#modalBackdrop').addEventListener('click', closeModal);
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeModal();
@@ -331,5 +566,5 @@ el('#topicInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') { e.preventDefault(); generate(); }
 });
 
-buildChips();
+buildCategoryChips();
 renderEmpty();

@@ -10,9 +10,25 @@ const SYSTEM_PROMPT = [
   'You are a project-idea generator for teen coders (ages 13-18) in the spirit of Hack Club.',
   'Generate creative, approachable, genuinely fun project ideas that a motivated teenager could actually build.',
   'Vary the ideas every time. Avoid generic ideas like "to-do app" unless given a clever twist.',
+  'Every idea must be DETAILED and in-depth, like a mentor writing a tiny project brief.',
   'Return ONLY valid minified JSON. No markdown, no commentary, no code fences.',
-  'Schema: {"ideas":[{"title":string,"difficulty":"Beginner"|"Intermediate"|"Advanced","timeEstimate":string,"stack":string[2-5],"description":string(1-2 sentences, energetic tone),"steps":string[3-6 short actionable steps]}]}',
-  'Match the requested difficulty when one is given. Match the requested category when one is given.'
+  'Schema: {"ideas":[{',
+  '"title":string(catchy, specific, not generic),',
+  '"difficulty":"Beginner"|"Intermediate"|"Advanced",',
+  '"timeEstimate":string(e.g. "a weekend", "~4 hours"),',
+  '"stack":string[3-6 concrete tools/libs/frameworks],',
+  '"summary":string(1 punchy sentence shown on the card),',
+  '"pitch":string(2-3 sentences: why this is worth building and what makes it fun/cool),',
+  '"whatYouLearn":string[3-5 concrete skills/concepts the builder will pick up],',
+  '"prerequisites":string[2-4 things to know or set up first; ok to say "none" for beginners],',
+  '"howItWorks":string(3-5 sentences: a plain-English overview of how the finished thing works under the hood),',
+  '"steps":string[5-8 detailed build steps, each a clear actionable sentence, in order],',
+  '"fileStructure":string[4-10 lines showing a simple file/folder tree as plain text],',
+  '"stretchGoals":string[3-5 ways to level it up once the basics work],',
+  '"gotchas":string[2-4 common mistakes or tricky bits to watch out for],',
+  '"showOff":string(1-2 sentences: where to share it, e.g. Hack Club Slack channel, GitHub, friends)]',
+  ']}',
+  'Keep titles under 60 chars. Be specific and concrete, never vague. Match the requested difficulty when given. Match the requested category when given.'
 ].join(' ');
 
 const PROVIDERS = [
@@ -172,10 +188,28 @@ function normalize(ideas, requestedDifficulty) {
       stack: Array.isArray(i.stack)
         ? i.stack.map((s) => String(s)).slice(0, 6)
         : [],
-      description: String(i.description || i.summary || '').slice(0, 400),
+      summary: String(i.summary || i.description || i.pitch || '').slice(0, 200),
+      pitch: String(i.pitch || '').slice(0, 600),
+      whatYouLearn: Array.isArray(i.whatYouLearn)
+        ? i.whatYouLearn.map((s) => String(s)).slice(0, 8)
+        : [],
+      prerequisites: Array.isArray(i.prerequisites)
+        ? i.prerequisites.map((s) => String(s)).slice(0, 6)
+        : [],
+      howItWorks: String(i.howItWorks || '').slice(0, 900),
       steps: Array.isArray(i.steps)
-        ? i.steps.map((s) => String(s)).slice(0, 8)
-        : []
+        ? i.steps.map((s) => String(s)).slice(0, 10)
+        : [],
+      fileStructure: Array.isArray(i.fileStructure)
+        ? i.fileStructure.map((s) => String(s)).slice(0, 14)
+        : [],
+      stretchGoals: Array.isArray(i.stretchGoals)
+        ? i.stretchGoals.map((s) => String(s)).slice(0, 6)
+        : [],
+      gotchas: Array.isArray(i.gotchas)
+        ? i.gotchas.map((s) => String(s)).slice(0, 6)
+        : [],
+      showOff: String(i.showOff || '').slice(0, 300)
     }));
 }
 
