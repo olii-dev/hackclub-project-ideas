@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hack Club Project Ideas — Fan-made (not affiliated with Hack Club)</title>
+  <meta name="description" content="A fan-made project idea generator for teen builders. Pick a category, hit generate, get fresh build ideas. Not officially affiliated with Hack Club." />
+  <link rel="icon" href="https://assets.hackclub.com/flag-standalone.svg" />
+  <style>
+    @font-face {
+      font-family: 'Phantom Sans';
+      src: url('https://assets.hackclub.com/fonts/Phantom_Sans_0.7/Regular.woff2') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Phantom Sans';
+      src: url('https://assets.hackclub.com/fonts/Phantom_Sans_0.7/Bold.woff2') format('woff2');
+      font-weight: bold;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Phantom Sans';
+      src: url('https://assets.hackclub.com/fonts/Phantom_Sans_0.7/Italic.woff2') format('woff2');
+      font-weight: normal;
+      font-style: italic;
+      font-display: swap;
+    }
+  </style>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="flag-corner" href="https://hackclub.com" target="_blank" rel="noopener" title="Hack Club (real site)">
+    <img src="https://assets.hackclub.com/flag-orpheus-top.svg" alt="Hack Club flag" />
+  </a>
+
+  <main>
+    <section class="hero">
+      <p class="kicker">A fan-made idea generator</p>
+      <h1>Project ideas for<br /><span class="grad">teen builders.</span></h1>
+      <p class="lede">Pick a vibe, type what you're into, hit generate, and get fresh build ideas — web, games, hardware, AI, and more. Built by a fan. <em>Not</em> affiliated with Hack Club.</p>
+      <div class="hero-flag">
+        <img src="https://assets.hackclub.com/flag-standalone.svg" alt="" aria-hidden="true" />
+      </div>
+    </section>
+
+    <section class="panel" id="filters">
+      <div class="panel-head">
+        <h2>What do you want to build?</h2>
+        <button class="toggle-adv" id="advToggle" type="button" aria-expanded="false">More options ⌄</button>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="topicInput">A topic or vibe <span class="opt">(optional)</span></label>
+        <input id="topicInput" class="text-input" type="text" placeholder="e.g. frogs, music, space, my local bus route…" maxlength="80" />
+      </div>
+
+      <div class="field">
+        <span class="field-label">Category</span>
+        <div class="chip-row" id="categoryRow" role="group" aria-label="Category"></div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label" for="difficultySelect">Difficulty</label>
+          <div class="select-wrap">
+            <select id="difficultySelect" class="select">
+              <option value="any">Any level</option>
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label" for="countSelect">How many ideas</label>
+          <div class="select-wrap">
+            <select id="countSelect" class="select">
+              <option value="3">3</option>
+              <option value="6" selected>6</option>
+              <option value="8">8</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="advanced" id="advanced" hidden>
+        <div class="field">
+          <label class="field-label" for="timeSelect">Time you've got <span class="opt">(optional)</span></label>
+          <div class="select-wrap">
+            <select id="timeSelect" class="select">
+              <option value="">Doesn't matter</option>
+              <option value="under an hour">Under an hour</option>
+              <option value="a single afternoon">A single afternoon</option>
+              <option value="a weekend">A weekend</option>
+              <option value="about a week">About a week</option>
+              <option value="multiple weeks">Multiple weeks</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label" for="toolsInput">Tech you already know <span class="opt">(optional)</span></label>
+          <input id="toolsInput" class="text-input" type="text" placeholder="e.g. Python, HTML, p5.js, Arduino…" maxlength="80" />
+        </div>
+        <div class="field">
+          <label class="field-label" for="extraInput">Anything else? <span class="opt">(optional)</span></label>
+          <input id="extraInput" class="text-input" type="text" placeholder="e.g. must run on my phone, no internet needed…" maxlength="120" />
+        </div>
+      </div>
+
+      <button class="generate" id="generateBtn" type="button">✨ Generate fresh ideas</button>
+    </section>
+
+    <section class="results" id="results" aria-live="polite"></section>
+  </main>
+
+  <div class="modal" id="modal" hidden>
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-card" id="modalCard" role="dialog" aria-modal="true"></div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <img class="footer-flag" src="https://assets.hackclub.com/flag-orpheus-left.svg" alt="Hack Club flag" />
+      <p class="footer-title">For teens, by a fan.</p>
+      <p class="disclaimer">This is an independent <strong>fan-made project</strong> and is not affiliated with, endorsed by, or sponsored by Hack Club or The Hack Foundation. "Hack Club" and the flag are trademarks of their owners. Go build real stuff with the real crowd at <a href="https://hackclub.com" target="_blank" rel="noopener">hackclub.com</a>.</p>
+      <div class="footer-links">
+        <a href="https://hackclub.com" target="_blank" rel="noopener">Hack Club</a>
+        <a href="https://hackclub.com/slack" target="_blank" rel="noopener">Slack</a>
+        <a href="https://github.com/hackclub" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://hackclub.com/brand/" target="_blank" rel="noopener">Brand</a>
+      </div>
+      <p class="copyright">© 2026 — Fan project. Not affiliated with Hack Club.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

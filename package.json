@@ -1,0 +1,11 @@
+{
+  "name": "hackclub-project-ideas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Fan-made project idea generator for teen builders. Not affiliated with Hack Club.",
+  "dependencies": {
+    "keyking-sdk": "latest"
+  },
+  "scripts": {}
+}

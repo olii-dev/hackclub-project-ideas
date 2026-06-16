@@ -1,0 +1,12 @@
+Replace this file with your real exported KeyKing vault.
+
+1. Open the KeyKing desktop app.
+2. Go to the Keys tab and add your free provider keys (Groq, Google Gemini, Mistral, etc.).
+3. Click Export Vault and save it as "vault.kk".
+4. Put that file at api/vault.kk (next to generate.js).
+
+For Vercel deployments, prefer setting the vault contents as an environment variable
+named KEYKING_VAULT (paste the full file contents) plus KEYKING_MASTER_PASSWORD.
+That keeps secrets out of git.
+
+This placeholder is not a valid vault.
