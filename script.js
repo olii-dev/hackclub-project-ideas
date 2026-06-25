@@ -1,3 +1,7 @@
+import { inject } from '@vercel/analytics';
+
+inject();
+
 const API_BASE = '';
 
 const CATEGORIES = [
