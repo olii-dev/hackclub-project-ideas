@@ -474,6 +474,172 @@ function pickFrame(category, rand) {
   return (framesByCategory[category] || fallbackFrames)[Math.floor(rand() * (framesByCategory[category] || fallbackFrames).length)];
 }
 
+function pickMode(category, index, rand) {
+  const modePools = {
+    music: ['instrument', 'remix', 'performance', 'audio'],
+    games: ['arcade', 'puzzle', 'challenge', 'score'],
+    tools: ['utility', 'automation', 'dashboard', 'workflow'],
+    creative: ['visual', 'art', 'motion', 'style'],
+    social: ['community', 'sharing', 'status', 'conversation'],
+    education: ['lesson', 'quiz', 'explainer', 'practice'],
+    data: ['insights', 'chart', 'comparison', 'tracker'],
+    hardware: ['sensor', 'controller', 'device', 'signal'],
+    climate: ['map', 'tracker', 'report', 'planner'],
+    robotics: ['control', 'telemetry', 'motion', 'automation'],
+    security: ['defense', 'audit', 'lock', 'monitor'],
+    accessibility: ['access', 'focus', 'reader', 'contrast']
+  };
+  const genericModes = ['tool', 'game', 'creative', 'community', 'learning', 'data'];
+  const pool = modePools[category] || genericModes;
+  return pool[(index + Math.floor(rand() * pool.length)) % pool.length];
+}
+
+function modeBlueprint(mode) {
+  const blueprints = {
+    instrument: {
+      titleBits: ['Beat', 'Pulse', 'Rhythm', 'Groove'],
+      summary: (focus) => `A playful audio playground for ${focus} that makes it easy to sketch ideas, hear them back, and keep tweaking until it feels good.`,
+      pitch: (focus) => `Build an instrument-style project around ${focus} so every interaction produces an immediate sound, response, or pattern. It should feel performable instead of just editable.`,
+      learn: ['Audio timing', 'Pattern design', 'Immediate feedback', 'UI controls'],
+      how: (focus) => `The app treats ${focus} as a set of playable pieces. Users trigger parts, adjust timing or tone, and save a version they can come back to later.`,
+      steps: [
+        'Set up a grid or timeline where the user can place sounds or beats.',
+        'Wire in playback so every click or tap produces an audible result.',
+        'Add controls for tempo, layering, or instrument choice.',
+        'Let the user save or duplicate a version they like.',
+        'Tune the visuals so the interface feels like a real instrument.'
+      ]
+    },
+    remix: {
+      titleBits: ['Mixer', 'Sampler', 'Loop', 'Mash'],
+      summary: (focus) => `A remix machine for ${focus} that lets people combine small pieces into something new without needing a huge setup.`,
+      pitch: (focus) => `Build a remix-first project where the fun is in combining small parts of ${focus} into something surprising. It should feel experimental and fast to use.`,
+      learn: ['Clip handling', 'Sequencing', 'Layering', 'Editing'],
+      how: (focus) => `The app stores a handful of ${focus} pieces and lets the user rearrange them into combinations. Each change should update instantly so the creative flow stays quick.`,
+      steps: [
+        'Create the base library of samples, pieces, or inputs.',
+        'Build a simple interface for stacking, triggering, or rearranging them.',
+        'Add mute, delete, or swap controls so the mix is editable.',
+        'Let users export or save a favorite combination.',
+        'Make the controls feel snappy and easy to experiment with.'
+      ]
+    },
+    arcade: {
+      titleBits: ['Arcade', 'Rush', 'Dash', 'Run'],
+      summary: (focus) => `A fast little arcade game built around ${focus} where the challenge comes from one clear move, timing window, or dodge.`,
+      pitch: (focus) => `Build a game that makes ${focus} feel fun in one screen, with a simple loop that gets harder the longer you survive.`,
+      learn: ['Game loops', 'Collision logic', 'Difficulty tuning', 'Animation timing'],
+      how: (focus) => `The game keeps one player action and one main challenge tied to ${focus}. The loop gets faster or busier over time so the player has to react, not just click once.`,
+      steps: [
+        'Program the player movement or one core action first.',
+        'Add a single obstacle, enemy, or timing challenge.',
+        'Track score, time, or survival so there is a clear goal.',
+        'Adjust difficulty until it feels challenging but fair.',
+        'Add sound, motion, or shake for better feedback.'
+      ]
+    },
+    puzzle: {
+      titleBits: ['Puzzle', 'Logic', 'Brain', 'Grid'],
+      summary: (focus) => `A compact puzzle project where ${focus} becomes a rule set people can learn quickly and master slowly.`,
+      pitch: (focus) => `Make a puzzle around ${focus} that is easy to understand but still gives the player a reason to try again and improve.`,
+      learn: ['State machines', 'Level design', 'Failure states', 'User feedback'],
+      how: (focus) => `The app presents ${focus} as a simple rule with a small number of outcomes. Each level or round adds one extra wrinkle so the player learns by doing instead of reading a huge tutorial.`,
+      steps: [
+        'Write down the puzzle rule in one sentence.',
+        'Build one level or board that teaches the rule quickly.',
+        'Add a restart path so trying again is painless.',
+        'Create a few small variations that increase the challenge.',
+        'Refine the feedback so wins and mistakes are obvious.'
+      ]
+    },
+    utility: {
+      titleBits: ['Tool', 'Helper', 'Flow', 'Kit'],
+      summary: (focus) => `A practical utility that turns ${focus} into a cleaner, faster, less annoying workflow.`,
+      pitch: (focus) => `Build a useful tool for ${focus} that saves time every week and feels satisfying because it solves a real annoyance.`,
+      learn: ['Automation', 'Data handling', 'Edge cases', 'Command design'],
+      how: (focus) => `The app takes one repeated ${focus} task and turns it into a single action. The end result should be obvious, useful, and quick to revisit.`,
+      steps: [
+        'Pick one repetitive task and map the exact steps it takes now.',
+        'Turn that flow into one simple action or command.',
+        'Format the output so it is easy to read or reuse.',
+        'Handle at least one likely mistake or edge case.',
+        'Add one polish feature that makes the tool feel complete.'
+      ]
+    },
+    visual: {
+      titleBits: ['Glow', 'Shape', 'Motion', 'Canvas'],
+      summary: (focus) => `A visual experiment that makes ${focus} feel more like an artwork or toy than a standard app.`,
+      pitch: (focus) => `Build something expressive around ${focus} so users can poke, tweak, and watch the output change in a satisfying way.`,
+      learn: ['Animation', 'Color systems', 'Composition', 'Interactive art'],
+      how: (focus) => `The project turns ${focus} into visual feedback instead of plain text. Small input changes should create obvious motion, color, or shape changes so the app feels alive.`,
+      steps: [
+        'Choose one strong visual effect that can carry the project.',
+        'Wire up a simple input or slider to control the visuals.',
+        'Layer in motion, randomness, or shape changes.',
+        'Add a reset or save option so experimenting feels safe.',
+        'Trim the interface until the visuals stay front and center.'
+      ]
+    },
+    community: {
+      titleBits: ['Club', 'Circle', 'Board', 'Link'],
+      summary: (focus) => `A community-style project where ${focus} becomes something people can share, react to, or build around together.`,
+      pitch: (focus) => `Make a social project that helps people connect around ${focus} instead of just scrolling past it.`,
+      learn: ['Sharing flows', 'Profiles', 'Feeds', 'Permissions'],
+      how: (focus) => `The app keeps a small set of shared ${focus} items and lets users react, save, or add their own version. It should feel lightweight and social without needing a huge backend to be fun.`,
+      steps: [
+        'Define the one social action the app should make easy.',
+        'Create a feed, board, or list that shows shared items clearly.',
+        'Add a simple way to react, comment, or save something.',
+        'Make the empty state inviting so the app does not feel blank.',
+        'Test the loop from posting to seeing something change immediately.'
+      ]
+    },
+    learning: {
+      titleBits: ['Learn', 'Quiz', 'Study', 'Practice'],
+      summary: (focus) => `A learning project that makes ${focus} easier to understand by turning it into short, repeatable practice.`,
+      pitch: (focus) => `Build a learning tool for ${focus} that teaches by doing, not by dumping a wall of text at the user.`,
+      learn: ['Content design', 'Progress tracking', 'Feedback loops', 'Accessibility'],
+      how: (focus) => `The app breaks ${focus} into small prompts, challenges, or examples. Each round should help the user remember something concrete and see progress over time.`,
+      steps: [
+        'Break the topic into a few small learning chunks.',
+        'Build a prompt or quiz loop that tests one chunk at a time.',
+        'Show immediate feedback so the user knows what happened.',
+        'Track progress or streaks in a simple local store.',
+        'Keep the content readable and the interaction low-friction.'
+      ]
+    },
+    data: {
+      titleBits: ['Chart', 'Insight', 'Trend', 'Compare'],
+      summary: (focus) => `A data project that turns ${focus} into something easier to scan, compare, and understand at a glance.`,
+      pitch: (focus) => `Build a data view around ${focus} that helps users spot patterns without digging through a mess of numbers.`,
+      learn: ['Filtering', 'Charting', 'Sorting', 'Data cleaning'],
+      how: (focus) => `The app pulls together ${focus} data, reshapes it, and shows the interesting bits first. The user should be able to change the view quickly and understand what changed.`,
+      steps: [
+        'Choose the exact metric or data set the project should show.',
+        'Load or create a small data source to work with.',
+        'Render the top-level numbers or chart first.',
+        'Add filters or comparisons that reveal patterns.',
+        'Explain the result with a clear title and summary.'
+      ]
+    },
+    hardware: {
+      titleBits: ['Signal', 'Sensor', 'Board', 'Pulse'],
+      summary: (focus) => `A hardware-flavored project where ${focus} becomes something you can sense, display, or control in the real world.`,
+      pitch: (focus) => `Build a hardware or sensor project that makes ${focus} tangible, with enough feedback that it feels like a real device instead of just code.`,
+      learn: ['Sensor input', 'Serial data', 'Calibration', 'Hardware debugging'],
+      how: (focus) => `The project reads a physical signal tied to ${focus} and turns it into visible or audible feedback. The software should stay simple enough that you can debug the hardware side without getting lost.`,
+      steps: [
+        'Pick one sensor or device interaction to focus on first.',
+        'Read the incoming data and print it somewhere obvious.',
+        'Map that signal to a visible response or action.',
+        'Calibrate the values so the output feels stable and usable.',
+        'Add a housing or interface that makes the project feel finished.'
+      ]
+    }
+  };
+  return blueprints[mode] || blueprints.utility;
+}
+
 function buildFallbackIdeas(request) {
   const rand = seededRandom(createSeed(request));
   const count = Math.min(Math.max(parseInt(request.count, 10) || 6, 1), 10);
@@ -489,30 +655,40 @@ function buildFallbackIdeas(request) {
 
   return normalize(Array.from({ length: count }, (_, index) => {
     const frame = pickFrame(category, seededRandom(createSeed({ request, index, salt: 'frame' })));
+    const mode = pickMode(category, index, rand);
+    const blueprint = modeBlueprint(mode);
     const adjective = choose(rand, ['Pocket', 'Neon', 'Tiny', 'Patchwork', 'Cosmic', 'Arcade', 'Jelly', 'Signal', 'Turbo', 'Orbit', 'Mossy', 'Crystal']);
     const noun = choose(rand, ['Studio', 'Tracker', 'Lab', 'Map', 'Bot', 'Board', 'Runner', 'Mixer', 'Vault', 'Builder', 'Deck', 'Workshop']);
     const focus = topic || categoryLabel;
     const targetWord = topic || focus || frame.noun;
-    const title = topic
-      ? `${adjective} ${topic.split(/\s+/)[0].replace(/[^a-z0-9]/gi, '') || noun}`
-      : `${adjective} ${choose(rand, [frame.noun, noun])}`;
+    const titleRoot = topic
+      ? topic.split(/\s+/)[0].replace(/[^a-z0-9]/gi, '') || choose(rand, [frame.noun, noun])
+      : choose(rand, [blueprint.titleBits[0], blueprint.titleBits[1], frame.noun, noun]);
+    const title = `${adjective} ${titleRoot}`;
     const stack = buildStack(category, tools, seededRandom(createSeed({ request, index, salt: 'stack' })));
-    const mergedLearn = shuffleWithRand([...frame.learn, choose(rand, ['Debugging', 'Accessibility', 'Deployment', 'Animation', 'Iteration'])], seededRandom(createSeed({ request, index, salt: 'learn' })));
-    const frameSteps = shuffleWithRand(frame.steps, seededRandom(createSeed({ request, index, salt: 'steps' })));
+    const mergedLearn = shuffleWithRand(unique([
+      ...blueprint.learn,
+      ...frame.learn,
+      choose(rand, ['Debugging', 'Accessibility', 'Deployment', 'Animation', 'Iteration', 'Testing'])
+    ]), seededRandom(createSeed({ request, index, salt: 'learn' })));
+    const frameSteps = shuffleWithRand(unique([
+      ...blueprint.steps,
+      ...frame.steps
+    ]), seededRandom(createSeed({ request, index, salt: 'steps' }))).slice(0, 6);
     const prerequisites = ['A code editor and browser'];
     if (tools) prerequisites.push(`Basic familiarity with ${tools}`);
     if (extra) prerequisites.push(extra);
     if (prerequisites.length === 0) prerequisites.push('none');
 
     const summaryBase = topic
-      ? `${frame.summary.replace(/a small idea/i, topic)} ${choose(rand, ['It leans into', 'It focuses on', 'It plays with'])} ${focus}.`
-      : frame.summary;
+      ? blueprint.summary(targetWord)
+      : blueprint.summary(frame.noun);
     const pitchBase = topic
-      ? `${frame.pitch} It is shaped around ${focus} so the result feels specific instead of generic.`
-      : frame.pitch;
+      ? blueprint.pitch(targetWord)
+      : blueprint.pitch(frame.noun);
     const howItWorks = topic
-      ? `The project centers on ${targetWord} and gives the builder one clear interaction to learn first, then a second layer of polish or control. Each part is set up so the idea feels focused, but still leaves room to customize the details and style.`
-      : `The project centers on ${frame.noun} and gives the builder one clear interaction to learn first, then a second layer of polish or control. Each part is set up so the idea feels focused, but still leaves room to customize the details and style.`;
+      ? blueprint.how(targetWord)
+      : blueprint.how(frame.noun);
 
     return {
       title: title + (index > 0 ? ` ${index + 1}` : ''),
