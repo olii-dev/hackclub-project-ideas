@@ -238,6 +238,15 @@ function unique(list) {
   return Array.from(new Set(list.filter(Boolean)));
 }
 
+function shuffleWithRand(list, rand) {
+  const items = list.slice();
+  for (let i = items.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rand() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
+}
+
 function buildStack(category, tools, rand) {
   const stackMap = {
     web: ['HTML', 'CSS', 'JavaScript', 'LocalStorage'],
@@ -293,6 +302,178 @@ function buildSteps(target, stack) {
   ];
 }
 
+function pickFrame(category, rand) {
+  const framesByCategory = {
+    music: [
+      {
+        noun: 'beat lab',
+        verb: 'compose',
+        summary: 'A tiny music tool that helps you explore rhythms, patterns, and quick ideas without getting buried in complexity.',
+        pitch: 'Build a playful music tool that lets you experiment fast, hear results immediately, and make something you can actually perform with or share.',
+        learn: ['Audio event timing', 'Pattern design', 'Immediate feedback', 'UI controls'],
+        steps: [
+          'Create a simple timeline or pad grid that responds instantly to clicks.',
+          'Wire in sound playback so every action produces an audible result.',
+          'Add controls for tempo, pattern length, or instrument selection.',
+          'Store favorite patterns so the user can come back to them later.',
+          'Polish the interface with a clear visual rhythm and strong contrast.'
+        ]
+      },
+      {
+        noun: 'sampler board',
+        verb: 'remix',
+        summary: 'A remix playground for stitching short sounds, loops, or samples into something that feels like your own instrument.',
+        pitch: 'Make a sample-mashing instrument that feels fun to tap, easy to tweak, and satisfying to show off to friends.',
+        learn: ['Clip handling', 'Sequencing', 'Gesture design', 'Audio mixing'],
+        steps: [
+          'Load a small set of sample pads or loop slots into the UI.',
+          'Add playback controls so clips can be triggered on demand.',
+          'Let the user rearrange or mute parts to create new combinations.',
+          'Add a save or export option for favorite mixes.',
+          'Test it on mobile so tapping feels clean and responsive.'
+        ]
+      }
+    ],
+    games: [
+      {
+        noun: 'arcade loop',
+        verb: 'dodge',
+        summary: 'A fast game prototype with one satisfying mechanic that is easy to learn and surprisingly hard to master.',
+        pitch: 'Build a small arcade game around a single funny or skill-based mechanic so the whole thing feels polished instead of bloated.',
+        learn: ['Game loops', 'Collision logic', 'Balancing difficulty', 'Animation timing'],
+        steps: [
+          'Set up the main loop and the core player movement.',
+          'Add one clear obstacle or enemy that creates tension.',
+          'Track score, lives, or survival time to create a win condition.',
+          'Tune speed and spacing until the game feels fair and punchy.',
+          'Add sound or screen shake to make hits and victories satisfying.'
+        ]
+      },
+      {
+        noun: 'puzzle run',
+        verb: 'solve',
+        summary: 'A puzzle-forward game where the fun comes from figuring out a compact rule set and beating your own best time.',
+        pitch: 'Make a puzzle game with a tight rule set, clean feedback, and enough challenge that people want to try one more run.',
+        learn: ['State machines', 'Level design', 'Feedback design', 'Restart flows'],
+        steps: [
+          'Define the puzzle rule in one sentence and keep it extremely focused.',
+          'Build one level and make sure the interaction is obvious.',
+          'Add a restart button and quick fail feedback so trying again feels easy.',
+          'Create two or three levels that teach the mechanic gradually.',
+          'Refine the pacing so the challenge rises without getting confusing.'
+        ]
+      }
+    ],
+    tools: [
+      {
+        noun: 'workflow bot',
+        verb: 'automate',
+        summary: 'A practical helper that shaves time off a boring task by turning a repetitive workflow into one clean button or command.',
+        pitch: 'Build a tiny utility that saves time every week, so the project feels immediately useful instead of just theoretical.',
+        learn: ['File handling', 'Command design', 'Edge-case thinking', 'Automation'],
+        steps: [
+          'Choose one repetitive task and write down the exact steps by hand.',
+          'Convert that flow into a single input or command the app can run.',
+          'Add output formatting so the result is easy to read or reuse.',
+          'Handle one obvious failure mode so the tool does not break on simple mistakes.',
+          'Add a small quality-of-life feature that makes the tool feel thoughtful.'
+        ]
+      },
+      {
+        noun: 'dashboard',
+        verb: 'organize',
+        summary: 'A dashboard that turns scattered info into something readable, trackable, and a lot less annoying to manage.',
+        pitch: 'Build a dashboard that makes a messy process feel under control, with clear summaries and fast access to the details.',
+        learn: ['Data shaping', 'Filtering', 'Layout systems', 'Status design'],
+        steps: [
+          'Define the main data points the dashboard should show first.',
+          'Create a strong top section with the most important summary numbers.',
+          'Add filters or search so the user can narrow the view quickly.',
+          'Show the detail rows or cards in a clean, scannable format.',
+          'Make sure empty and error states still feel intentional.'
+        ]
+      }
+    ],
+    creative: [
+      {
+        noun: 'visual toy',
+        verb: 'morph',
+        summary: 'A visual playground for making shapes, motion, or color feel alive in a way that is more art than app.',
+        pitch: 'Build a visual toy that rewards curiosity, lets people experiment freely, and makes something beautiful happen quickly.',
+        learn: ['Animation timing', 'Canvas or SVG', 'Color systems', 'Interactive art'],
+        steps: [
+          'Pick one visual effect that can carry the whole project.',
+          'Set up a simple input so the user can influence the visuals.',
+          'Layer in motion, color changes, or randomness for personality.',
+          'Add a reset or save button so experimenting feels safe.',
+          'Tighten the spacing and motion until the whole thing feels intentional.'
+        ]
+      },
+      {
+        noun: 'style lab',
+        verb: 'design',
+        summary: 'A style experiment where the app itself becomes part of the creative output, not just the container around it.',
+        pitch: 'Make a stylized interface or generator that feels expressive, memorable, and a little unexpected when people open it.',
+        learn: ['Typography', 'Component systems', 'Motion', 'Visual hierarchy'],
+        steps: [
+          'Pick a visual mood and set up a tiny design system around it.',
+          'Build the main interaction so the style changes in response to input.',
+          'Make the layout responsive so the experiment still works on small screens.',
+          'Add one surprising effect that gives the app a signature feel.',
+          'Trim clutter so the style reads clearly at first glance.'
+        ]
+      }
+    ]
+  };
+
+  const fallbackFrames = [
+    {
+      noun: 'studio',
+      verb: 'build',
+      summary: 'A compact project studio that turns a small idea into something tangible and fun to refine.',
+      pitch: 'Build a project that feels personal, practical, and easy to explain, while still leaving room for creativity and polish.',
+      learn: ['Planning', 'UI structure', 'Iteration', 'Polish'],
+      steps: [
+        'Define the smallest useful version of the project.',
+        'Set up the main view and wire in the core interaction.',
+        'Add one feature that makes the project feel uniquely yours.',
+        'Make the data or state update cleanly as the user interacts.',
+        'Polish the visuals and remove anything distracting.'
+      ]
+    },
+    {
+      noun: 'tracker',
+      verb: 'track',
+      summary: 'A focused tracker that helps keep something useful visible, organized, and easy to act on.',
+      pitch: 'Make a tracker that turns a messy habit, goal, or collection into something clear enough to use every day.',
+      learn: ['State management', 'Sorting', 'Persistence', 'User flows'],
+      steps: [
+        'Choose the one thing the tracker should help the user understand.',
+        'Create the basic input and display loop first.',
+        'Add a way to store or restore the items later.',
+        'Surface totals, categories, or recent activity in a readable way.',
+        'Refine the layout so it is fast to scan and simple to use.'
+      ]
+    },
+    {
+      noun: 'map',
+      verb: 'explore',
+      summary: 'A map-style project that turns a set of places, ideas, or events into something people can browse and discover.',
+      pitch: 'Build something map-like so users can explore data spatially, zoom into details, and instantly see patterns.',
+      learn: ['Geographic thinking', 'Filtering', 'Search', 'Annotation'],
+      steps: [
+        'Decide what the map should help people discover.',
+        'Render the main visual regions or markers first.',
+        'Add hover or click details so the data becomes explorable.',
+        'Create filters that narrow the view without cluttering the screen.',
+        'Make the interaction smooth enough that people want to keep clicking around.'
+      ]
+    }
+  ];
+
+  return (framesByCategory[category] || fallbackFrames)[Math.floor(rand() * (framesByCategory[category] || fallbackFrames).length)];
+}
+
 function buildFallbackIdeas(request) {
   const rand = seededRandom(createSeed(request));
   const count = Math.min(Math.max(parseInt(request.count, 10) || 6, 1), 10);
@@ -305,50 +486,45 @@ function buildFallbackIdeas(request) {
   const categoryLabel = category === 'all'
     ? choose(rand, ['maker', 'builder', 'creative', 'coding'])
     : category;
-  const summaryOpeners = ['A', 'A clever', 'A playful', 'A focused', 'A lightweight'];
-  const summaryHooks = ['twist', 'build', 'challenge', 'project', 'experiment'];
-  const pitchAngles = [
-    'make it feel personal from the first screen',
-    'keep the core loop simple so you can finish fast',
-    'leave room for polish, personality, and custom details',
-    'turn a small idea into something you can actually show off'
-  ];
-  const projectVerbs = ['organize', 'track', 'remix', 'visualize', 'capture', 'discover', 'share', 'automate'];
 
   return normalize(Array.from({ length: count }, (_, index) => {
-    const adjective = choose(rand, ['Pocket', 'Neon', 'Tiny', 'Patchwork', 'Cosmic', 'Arcade', 'Jelly', 'Signal', 'Turbo', 'Orbit']);
-    const noun = choose(rand, ['Studio', 'Tracker', 'Lab', 'Map', 'Bot', 'Board', 'Runner', 'Mixer', 'Vault', 'Builder']);
-    const hook = choose(rand, summaryHooks);
-    const angle = choose(rand, pitchAngles);
-    const verb = choose(rand, projectVerbs);
+    const frame = pickFrame(category, seededRandom(createSeed({ request, index, salt: 'frame' })));
+    const adjective = choose(rand, ['Pocket', 'Neon', 'Tiny', 'Patchwork', 'Cosmic', 'Arcade', 'Jelly', 'Signal', 'Turbo', 'Orbit', 'Mossy', 'Crystal']);
+    const noun = choose(rand, ['Studio', 'Tracker', 'Lab', 'Map', 'Bot', 'Board', 'Runner', 'Mixer', 'Vault', 'Builder', 'Deck', 'Workshop']);
     const focus = topic || categoryLabel;
+    const targetWord = topic || focus || frame.noun;
     const title = topic
       ? `${adjective} ${topic.split(/\s+/)[0].replace(/[^a-z0-9]/gi, '') || noun}`
-      : `${adjective} ${noun}`;
+      : `${adjective} ${choose(rand, [frame.noun, noun])}`;
     const stack = buildStack(category, tools, seededRandom(createSeed({ request, index, salt: 'stack' })));
-    const summaryFocus = topic || `${focus} ${hook}`;
-    const pitchFocus = topic || `${focus} ${verb}`;
+    const mergedLearn = shuffleWithRand([...frame.learn, choose(rand, ['Debugging', 'Accessibility', 'Deployment', 'Animation', 'Iteration'])], seededRandom(createSeed({ request, index, salt: 'learn' })));
+    const frameSteps = shuffleWithRand(frame.steps, seededRandom(createSeed({ request, index, salt: 'steps' })));
     const prerequisites = ['A code editor and browser'];
     if (tools) prerequisites.push(`Basic familiarity with ${tools}`);
     if (extra) prerequisites.push(extra);
     if (prerequisites.length === 0) prerequisites.push('none');
+
+    const summaryBase = topic
+      ? `${frame.summary.replace(/a small idea/i, topic)} ${choose(rand, ['It leans into', 'It focuses on', 'It plays with'])} ${focus}.`
+      : frame.summary;
+    const pitchBase = topic
+      ? `${frame.pitch} It is shaped around ${focus} so the result feels specific instead of generic.`
+      : frame.pitch;
+    const howItWorks = topic
+      ? `The project centers on ${targetWord} and gives the builder one clear interaction to learn first, then a second layer of polish or control. Each part is set up so the idea feels focused, but still leaves room to customize the details and style.`
+      : `The project centers on ${frame.noun} and gives the builder one clear interaction to learn first, then a second layer of polish or control. Each part is set up so the idea feels focused, but still leaves room to customize the details and style.`;
 
     return {
       title: title + (index > 0 ? ` ${index + 1}` : ''),
       difficulty: difficulty === 'any' ? choose(rand, ['Beginner', 'Intermediate', 'Advanced']) : difficulty,
       timeEstimate: time || choose(rand, ['a weekend', 'a single afternoon', '~4 hours', 'about a week']),
       stack,
-      summary: `${choose(rand, summaryOpeners)} ${summaryFocus} idea with a playful twist that's small enough to finish and interesting enough to show off.`,
-      pitch: `Build a ${pitchFocus} project that feels custom to you and gives you something real to share with friends. ${angle}.`,
-      whatYouLearn: [
-        choose(rand, ['Project planning', 'UI structure and state', 'Debugging and iteration', 'Working with APIs or data']),
-        choose(rand, ['Data modeling', 'Responsive design', 'User flows', 'Input handling']),
-        choose(rand, ['Testing and refinement', 'State management', 'Accessibility', 'Deployment basics']),
-        choose(rand, ['Animation', 'Error handling', 'File structure', 'Performance tuning'])
-      ].filter((item, idx, arr) => arr.indexOf(item) === idx).slice(0, choose(rand, [3, 4])),
+      summary: summaryBase,
+      pitch: pitchBase,
+      whatYouLearn: mergedLearn.slice(0, choose(rand, [3, 4])),
       prerequisites,
-      howItWorks: `The app keeps a small set of ${focus} ideas and blends them with the details you picked, then it surfaces a build plan with a slightly different angle each time. The result is still concrete and usable, but each card feels like its own mini brief instead of a copy of the others.`,
-      steps: buildSteps(topic || categoryLabel || 'project', stack),
+      howItWorks,
+      steps: frameSteps,
       fileStructure: [
         'project/',
         '  index.html',
@@ -358,10 +534,10 @@ function buildFallbackIdeas(request) {
         '  assets/'
       ],
       stretchGoals: [
-        choose(rand, ['Add sharing or export features', 'Polish the visuals and motion', 'Save user progress locally', 'Make it work on mobile']),
-        choose(rand, ['Add a second mode', 'Improve keyboard navigation', 'Add saved settings', 'Make the data refresh live']),
-        choose(rand, ['Ship a themed UI skin', 'Add search or filtering', 'Export a screenshot', 'Add sound or animation']),
-        choose(rand, ['Make it collaborative', 'Add history or undo', 'Support offline use', 'Add analytics or logs'])
+        choose(rand, ['Add sharing or export features', 'Polish the visuals and motion', 'Save user progress locally', 'Make it work on mobile', 'Add a second mode']),
+        choose(rand, ['Improve keyboard navigation', 'Add saved settings', 'Make the data refresh live', 'Add search or filtering', 'Export a screenshot']),
+        choose(rand, ['Ship a themed UI skin', 'Add sound or animation', 'Make it collaborative', 'Add history or undo', 'Support offline use']),
+        choose(rand, ['Add analytics or logs', 'Let users remix the output', 'Create a cleaner empty state', 'Add a tutorial mode', 'Support dark mode'])
       ].filter((item, idx, arr) => arr.indexOf(item) === idx).slice(0, choose(rand, [3, 4])),
       gotchas: [
         'Keep the first version tiny',
