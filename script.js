@@ -1,6 +1,9 @@
 import { inject } from '@vercel/analytics';
 
-inject();
+// Initialize Vercel Web Analytics
+inject({
+  mode: 'production',
+});
 
 const API_BASE = '';
 
