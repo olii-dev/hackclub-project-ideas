@@ -234,7 +234,11 @@ function choose(rand, list) {
   return list[Math.floor(rand() * list.length) % list.length];
 }
 
-function buildStack(category, tools) {
+function unique(list) {
+  return Array.from(new Set(list.filter(Boolean)));
+}
+
+function buildStack(category, tools, rand) {
   const stackMap = {
     web: ['HTML', 'CSS', 'JavaScript', 'LocalStorage'],
     games: ['HTML Canvas', 'JavaScript', 'requestAnimationFrame', 'Sound effects'],
@@ -253,9 +257,29 @@ function buildStack(category, tools) {
     security: ['Input validation', 'Auth basics', 'JavaScript', 'Logging'],
     accessibility: ['Semantic HTML', 'ARIA', 'Keyboard nav', 'Contrast']
   };
+  const stackExtras = {
+    web: ['Alpine.js', 'Astro', 'Chart.js', 'IndexedDB'],
+    games: ['Howler.js', 'PixiJS', 'Collision detection', 'Sprite sheets'],
+    hardware: ['P5.js', 'MQTT', 'Bluetooth', 'Serial Plotter'],
+    ai: ['OpenAI-compatible API', 'Prompt engineering', 'Embeddings', 'Streaming responses'],
+    mobile: ['PWA', 'Touch gestures', 'Service workers', 'Offline storage'],
+    tools: ['Commander.js', 'fs/promises', 'JSON', 'CLI flags'],
+    data: ['D3.js', 'CSV parser', 'Filtering', 'Sorting'],
+    creative: ['GSAP', 'SVG filters', 'Noise', 'Animation timelines'],
+    music: ['Tone.js', 'MIDI output', 'Sequencing', 'Audio envelopes'],
+    social: ['Web Share API', 'Notifications', 'Realtime updates', 'Profiles'],
+    education: ['Quiz logic', 'Progress tracking', 'Markdown', 'Accessibility'],
+    science: ['Scatter plots', 'Regression', 'Units', 'Trend lines'],
+    climate: ['Maps', 'Forecast data', 'Carbon calculations', 'Heatmaps'],
+    robotics: ['PID control', 'Sensor smoothing', 'Telemetry', 'Motor control'],
+    security: ['Hashing', 'Rate limiting', 'Audit logs', 'Threat modeling'],
+    accessibility: ['Screen reader testing', 'Focus management', 'High contrast', 'Keyboard support']
+  };
   const base = stackMap[category] || ['HTML', 'CSS', 'JavaScript', 'LocalStorage'];
-  if (!tools) return base;
-  return [...base.slice(0, 2), tools, ...base.slice(2)].slice(0, 6);
+  const extras = stackExtras[category] || ['Local state', 'Forms', 'Routing', 'Responsive layout'];
+  const pickedExtras = [choose(rand, extras), choose(rand, extras)].filter(Boolean);
+  const merged = tools ? [...base.slice(0, 2), tools, ...pickedExtras, ...base.slice(2)] : [...base, ...pickedExtras];
+  return unique(merged).slice(0, 6);
 }
 
 function buildSteps(target, stack) {
@@ -281,15 +305,29 @@ function buildFallbackIdeas(request) {
   const categoryLabel = category === 'all'
     ? choose(rand, ['maker', 'builder', 'creative', 'coding'])
     : category;
+  const summaryOpeners = ['A', 'A clever', 'A playful', 'A focused', 'A lightweight'];
+  const summaryHooks = ['twist', 'build', 'challenge', 'project', 'experiment'];
+  const pitchAngles = [
+    'make it feel personal from the first screen',
+    'keep the core loop simple so you can finish fast',
+    'leave room for polish, personality, and custom details',
+    'turn a small idea into something you can actually show off'
+  ];
+  const projectVerbs = ['organize', 'track', 'remix', 'visualize', 'capture', 'discover', 'share', 'automate'];
 
   return normalize(Array.from({ length: count }, (_, index) => {
     const adjective = choose(rand, ['Pocket', 'Neon', 'Tiny', 'Patchwork', 'Cosmic', 'Arcade', 'Jelly', 'Signal', 'Turbo', 'Orbit']);
     const noun = choose(rand, ['Studio', 'Tracker', 'Lab', 'Map', 'Bot', 'Board', 'Runner', 'Mixer', 'Vault', 'Builder']);
+    const hook = choose(rand, summaryHooks);
+    const angle = choose(rand, pitchAngles);
+    const verb = choose(rand, projectVerbs);
     const focus = topic || categoryLabel;
     const title = topic
       ? `${adjective} ${topic.split(/\s+/)[0].replace(/[^a-z0-9]/gi, '') || noun}`
       : `${adjective} ${noun}`;
-    const stack = buildStack(category, tools);
+    const stack = buildStack(category, tools, seededRandom(createSeed({ request, index, salt: 'stack' })));
+    const summaryFocus = topic || `${focus} ${hook}`;
+    const pitchFocus = topic || `${focus} ${verb}`;
     const prerequisites = ['A code editor and browser'];
     if (tools) prerequisites.push(`Basic familiarity with ${tools}`);
     if (extra) prerequisites.push(extra);
@@ -300,16 +338,16 @@ function buildFallbackIdeas(request) {
       difficulty: difficulty === 'any' ? choose(rand, ['Beginner', 'Intermediate', 'Advanced']) : difficulty,
       timeEstimate: time || choose(rand, ['a weekend', 'a single afternoon', '~4 hours', 'about a week']),
       stack,
-      summary: `A ${focus} project with a playful twist that is small enough to finish and interesting enough to show off.`,
-      pitch: `Build a ${focus} project that feels custom to you and gives you something real to share with friends. It stays practical, but leaves room for personality, style, and a little experimentation.`,
+      summary: `${choose(rand, summaryOpeners)} ${summaryFocus} idea with a playful twist that's small enough to finish and interesting enough to show off.`,
+      pitch: `Build a ${pitchFocus} project that feels custom to you and gives you something real to share with friends. ${angle}.`,
       whatYouLearn: [
-        'Project planning',
-        'UI structure and state',
-        'Debugging and iteration',
-        'Working with APIs or data'
-      ].slice(0, choose(rand, [3, 4])),
+        choose(rand, ['Project planning', 'UI structure and state', 'Debugging and iteration', 'Working with APIs or data']),
+        choose(rand, ['Data modeling', 'Responsive design', 'User flows', 'Input handling']),
+        choose(rand, ['Testing and refinement', 'State management', 'Accessibility', 'Deployment basics']),
+        choose(rand, ['Animation', 'Error handling', 'File structure', 'Performance tuning'])
+      ].filter((item, idx, arr) => arr.indexOf(item) === idx).slice(0, choose(rand, [3, 4])),
       prerequisites,
-      howItWorks: `The app keeps a small set of ${focus} ideas and combines them with the details you picked. It then renders a focused build plan so you can start quickly and refine as you go.`,
+      howItWorks: `The app keeps a small set of ${focus} ideas and blends them with the details you picked, then it surfaces a build plan with a slightly different angle each time. The result is still concrete and usable, but each card feels like its own mini brief instead of a copy of the others.`,
       steps: buildSteps(topic || categoryLabel || 'project', stack),
       fileStructure: [
         'project/',
@@ -320,11 +358,11 @@ function buildFallbackIdeas(request) {
         '  assets/'
       ],
       stretchGoals: [
-        'Add sharing or export features',
-        'Polish the visuals and motion',
-        'Save user progress locally',
-        'Make it work on mobile'
-      ].slice(0, choose(rand, [3, 4])),
+        choose(rand, ['Add sharing or export features', 'Polish the visuals and motion', 'Save user progress locally', 'Make it work on mobile']),
+        choose(rand, ['Add a second mode', 'Improve keyboard navigation', 'Add saved settings', 'Make the data refresh live']),
+        choose(rand, ['Ship a themed UI skin', 'Add search or filtering', 'Export a screenshot', 'Add sound or animation']),
+        choose(rand, ['Make it collaborative', 'Add history or undo', 'Support offline use', 'Add analytics or logs'])
+      ].filter((item, idx, arr) => arr.indexOf(item) === idx).slice(0, choose(rand, [3, 4])),
       gotchas: [
         'Keep the first version tiny',
         'Test one flow at a time',
