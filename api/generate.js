@@ -213,6 +213,128 @@ function normalize(ideas, requestedDifficulty) {
     }));
 }
 
+function createSeed(input) {
+  const text = JSON.stringify(input || {});
+  let seed = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    seed = (seed * 31 + text.charCodeAt(i)) >>> 0;
+  }
+  return seed || 1;
+}
+
+function seededRandom(seed) {
+  let value = seed >>> 0;
+  return () => {
+    value = (1664525 * value + 1013904223) >>> 0;
+    return value / 0x100000000;
+  };
+}
+
+function choose(rand, list) {
+  return list[Math.floor(rand() * list.length) % list.length];
+}
+
+function buildStack(category, tools) {
+  const stackMap = {
+    web: ['HTML', 'CSS', 'JavaScript', 'LocalStorage'],
+    games: ['HTML Canvas', 'JavaScript', 'requestAnimationFrame', 'Sound effects'],
+    hardware: ['Arduino', 'Serial', 'JavaScript', 'Sensor data'],
+    ai: ['JavaScript', 'Fetch', 'Prompt templates', 'API integration'],
+    mobile: ['HTML', 'CSS', 'JavaScript', 'Responsive design'],
+    tools: ['Node.js', 'File I/O', 'JavaScript', 'CLI design'],
+    data: ['CSV', 'Chart rendering', 'JavaScript', 'Filtering'],
+    creative: ['Canvas', 'SVG', 'CSS animations', 'JavaScript'],
+    music: ['Web Audio API', 'JavaScript', 'MIDI', 'UI controls'],
+    social: ['JavaScript', 'Forms', 'LocalStorage', 'Sharing'],
+    education: ['JavaScript', 'Content structure', 'State', 'Accessibility'],
+    science: ['Data visualization', 'JavaScript', 'Charts', 'Math'],
+    climate: ['Maps', 'Data tracking', 'JavaScript', 'Charts'],
+    robotics: ['Sensors', 'Control loops', 'JavaScript', 'Serial'],
+    security: ['Input validation', 'Auth basics', 'JavaScript', 'Logging'],
+    accessibility: ['Semantic HTML', 'ARIA', 'Keyboard nav', 'Contrast']
+  };
+  const base = stackMap[category] || ['HTML', 'CSS', 'JavaScript', 'LocalStorage'];
+  if (!tools) return base;
+  return [...base.slice(0, 2), tools, ...base.slice(2)].slice(0, 6);
+}
+
+function buildSteps(target, stack) {
+  return [
+    `Pick one clear version of the ${target} idea and write a two-sentence spec.`,
+    `Set up the main screen and wire in the core ${stack[0]} or ${stack[1]} pieces.`,
+    'Add the primary input or interaction that makes the project feel alive.',
+    'Connect the data flow so each change updates the UI immediately.',
+    'Style the interface with a consistent color system and readable layout.',
+    'Test the rough edges, trim anything unnecessary, and polish the experience.'
+  ];
+}
+
+function buildFallbackIdeas(request) {
+  const rand = seededRandom(createSeed(request));
+  const count = Math.min(Math.max(parseInt(request.count, 10) || 6, 1), 10);
+  const topic = String(request.topic || '').trim();
+  const category = String(request.category || 'all');
+  const difficulty = String(request.difficulty || 'any');
+  const time = String(request.time || '').trim();
+  const tools = String(request.tools || '').trim();
+  const extra = String(request.extra || '').trim();
+  const categoryLabel = category === 'all'
+    ? choose(rand, ['maker', 'builder', 'creative', 'coding'])
+    : category;
+
+  return normalize(Array.from({ length: count }, (_, index) => {
+    const adjective = choose(rand, ['Pocket', 'Neon', 'Tiny', 'Patchwork', 'Cosmic', 'Arcade', 'Jelly', 'Signal', 'Turbo', 'Orbit']);
+    const noun = choose(rand, ['Studio', 'Tracker', 'Lab', 'Map', 'Bot', 'Board', 'Runner', 'Mixer', 'Vault', 'Builder']);
+    const focus = topic || categoryLabel;
+    const title = topic
+      ? `${adjective} ${topic.split(/\s+/)[0].replace(/[^a-z0-9]/gi, '') || noun}`
+      : `${adjective} ${noun}`;
+    const stack = buildStack(category, tools);
+    const prerequisites = ['A code editor and browser'];
+    if (tools) prerequisites.push(`Basic familiarity with ${tools}`);
+    if (extra) prerequisites.push(extra);
+    if (prerequisites.length === 0) prerequisites.push('none');
+
+    return {
+      title: title + (index > 0 ? ` ${index + 1}` : ''),
+      difficulty: difficulty === 'any' ? choose(rand, ['Beginner', 'Intermediate', 'Advanced']) : difficulty,
+      timeEstimate: time || choose(rand, ['a weekend', 'a single afternoon', '~4 hours', 'about a week']),
+      stack,
+      summary: `A ${focus} project with a playful twist that is small enough to finish and interesting enough to show off.`,
+      pitch: `Build a ${focus} project that feels custom to you and gives you something real to share with friends. It stays practical, but leaves room for personality, style, and a little experimentation.`,
+      whatYouLearn: [
+        'Project planning',
+        'UI structure and state',
+        'Debugging and iteration',
+        'Working with APIs or data'
+      ].slice(0, choose(rand, [3, 4])),
+      prerequisites,
+      howItWorks: `The app keeps a small set of ${focus} ideas and combines them with the details you picked. It then renders a focused build plan so you can start quickly and refine as you go.`,
+      steps: buildSteps(topic || categoryLabel || 'project', stack),
+      fileStructure: [
+        'project/',
+        '  index.html',
+        '  style.css',
+        '  script.js',
+        '  data/',
+        '  assets/'
+      ],
+      stretchGoals: [
+        'Add sharing or export features',
+        'Polish the visuals and motion',
+        'Save user progress locally',
+        'Make it work on mobile'
+      ].slice(0, choose(rand, [3, 4])),
+      gotchas: [
+        'Keep the first version tiny',
+        'Test one flow at a time',
+        'Do not overcomplicate the data model'
+      ],
+      showOff: 'Post it in Hack Club Slack, push it to GitHub, and demo it to a friend once it works.'
+    };
+  }), difficulty);
+}
+
 export default async function handler(req, res) {
   const origin = req.headers.origin;
   const headers = corsHeaders(origin);
@@ -277,6 +399,13 @@ export default async function handler(req, res) {
     } catch (e) {
       errors.push(provider.name + ': ' + (e && e.message));
     }
+  }
+
+  const fallbackIdeas = buildFallbackIdeas({ category, difficulty, count, topic, time, tools, extra });
+  if (fallbackIdeas.length > 0) {
+    res.writeHead(200, { ...headers, 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ideas: fallbackIdeas, source: 'fallback' }));
+    return;
   }
 
   res.writeHead(502, { ...headers, 'Content-Type': 'application/json' });
